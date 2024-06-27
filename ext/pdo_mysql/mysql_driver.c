@@ -776,7 +776,6 @@ static int pdo_mysql_handle_factory(pdo_dbh_t *dbh, zval *driver_options)
 			goto cleanup;
 		}
 
-
 		read_timeout = pdo_attr_lval(driver_options, PDO_MYSQL_ATTR_READ_TIMEOUT, 0);
 		if (read_timeout) {
 			if (mysql_options(H->server, MYSQL_OPT_READ_TIMEOUT, (void *)&read_timeout)) {
