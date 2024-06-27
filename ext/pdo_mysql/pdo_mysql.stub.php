@@ -73,5 +73,8 @@ class Mysql extends PDO
     public const int ATTR_LOCAL_INFILE_DIRECTORY = UNKNOWN;
 #endif
 
+    /** @cvalue PDO_MYSQL_ATTR_READ_TIMEOUT */
+    public const int ATTR_READ_TIMEOUT = UNKNOWN;
+
     public function getWarningCount(): int {}
 }

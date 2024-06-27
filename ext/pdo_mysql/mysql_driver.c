@@ -742,6 +742,7 @@ static int pdo_mysql_handle_factory(pdo_dbh_t *dbh, zval *driver_options)
 	/* handle MySQL options */
 	if (driver_options) {
 		zend_long connect_timeout = pdo_attr_lval(driver_options, PDO_ATTR_TIMEOUT, 30);
+		zend_long read_timeout = pdo_attr_lval(driver_options, PDO_MYSQL_ATTR_READ_TIMEOUT, 0);
 		zend_string *init_cmd = NULL;
 #ifndef PDO_USE_MYSQLND
 		zend_string *default_file = NULL, *default_group = NULL;
@@ -773,6 +774,13 @@ static int pdo_mysql_handle_factory(pdo_dbh_t *dbh, zval *driver_options)
 		if (mysql_options(H->server, MYSQL_OPT_CONNECT_TIMEOUT, (const char *)&connect_timeout)) {
 			pdo_mysql_error(dbh);
 			goto cleanup;
+		}
+
+		if (read_timeout > 0) {
+			if (mysql_options(H->server, MYSQL_OPT_READ_TIMEOUT, (void *)&read_timeout)) {
+				pdo_mysql_error(dbh);
+				goto cleanup;
+			}
 		}
 
 		if (pdo_attr_lval(driver_options, PDO_MYSQL_ATTR_LOCAL_INFILE, 0)) {
