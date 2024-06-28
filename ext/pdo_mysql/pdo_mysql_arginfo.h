@@ -145,5 +145,11 @@ static zend_class_entry *register_class_Pdo_Mysql(zend_class_entry *class_entry_
 	zend_string_release(const_ATTR_LOCAL_INFILE_DIRECTORY_name);
 #endif
 
+	zval const_ATTR_READ_TIMEOUT_value;
+	ZVAL_LONG(&const_ATTR_READ_TIMEOUT_value, PDO_MYSQL_ATTR_READ_TIMEOUT);
+	zend_string *const_ATTR_READ_TIMEOUT_name = zend_string_init_interned("ATTR_READ_TIMEOUT", sizeof("ATTR_READ_TIMEOUT") - 1, 1);
+	zend_declare_typed_class_constant(class_entry, const_ATTR_READ_TIMEOUT_name, &const_ATTR_READ_TIMEOUT_value, ZEND_ACC_PUBLIC, NULL, (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_LONG));
+	zend_string_release(const_ATTR_READ_TIMEOUT_name);
+
 	return class_entry;
 }
