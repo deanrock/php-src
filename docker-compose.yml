@@ -1,0 +1,14 @@
+services:
+  dev:
+    init: true
+    build: .
+    volumes:
+      - ./:/app:rw,cached,z
+    ports:
+      - 0.0.0.0:2200:22
+      - 0.0.0.0:8000:8000
+    userns_mode: keep-id
+    environment:
+      # preserve bash history from devcontainer
+      - PROMPT_COMMAND=history -a
+      - HISTFILE=/app/.bash-history

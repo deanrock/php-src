@@ -74,7 +74,16 @@ php_apache_sapi_ub_write(const char *str, size_t str_length)
 	php_struct *ctx;
 
 	ctx = SG(server_context);
+
+	printf("STR: %s\n",str);
+
+	if (ctx->r == 0) {
+		return str_length;
+	}
+
 	r = ctx->r;
+
+
 
 	if (ap_rwrite(str, str_length, r) < 0) {
 		php_handle_aborted_connection();
@@ -90,6 +99,10 @@ php_apache_sapi_header_handler(sapi_header_struct *sapi_header, sapi_header_op_e
 	char *val, *ptr;
 
 	ctx = SG(server_context);
+
+	if (ctx->r == NULL) {
+		return 0;
+	}
 
 	switch (op) {
 		case SAPI_HEADER_DELETE:
@@ -149,6 +162,13 @@ static int
 php_apache_sapi_send_headers(sapi_headers_struct *sapi_headers)
 {
 	php_struct *ctx = SG(server_context);
+
+	if (ctx->r == NULL) {
+		efree(ctx->content_type);
+		ctx->content_type = NULL;
+		return SAPI_HEADER_SENT_SUCCESSFULLY;
+	}
+
 	const char *sline = SG(sapi_headers).http_status_line;
 
 	ctx->r->status = SG(sapi_headers).http_response_code;
@@ -185,6 +205,11 @@ php_apache_sapi_read_post(char *buf, size_t count_bytes)
 	apr_status_t status;
 
 	r = ctx->r;
+
+	if (ctx->r == NULL) {
+		return 0;
+	}
+
 	brigade = ctx->brigade;
 	len = count_bytes;
 
@@ -240,6 +265,10 @@ php_apache_sapi_read_cookies(void)
 {
 	php_struct *ctx = SG(server_context);
 	const char *http_cookie;
+
+	if (ctx->r == NULL) {
+		return "";
+	}
 
 	http_cookie = apr_table_get(ctx->r->headers_in, "cookie");
 
@@ -508,6 +537,54 @@ php_apache_server_startup(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptemp
 	}
 	apr_pool_cleanup_register(pconf, NULL, php_apache_server_shutdown, apr_pool_cleanup_null);
 	php_apache_add_version(pconf);
+
+	php_struct * volatile ctx;
+	ctx = SG(server_context) = malloc(sizeof *ctx);
+	//ctx = SG(server_context) = apr_pcalloc(r->pool, sizeof(*ctx));
+	((php_struct *)SG(server_context))->r = NULL;
+
+	//ctx = SG(server_context) = apr_pcalloc(r->pool, sizeof(*ctx));
+
+	printf("before\n");
+	//php_request_startup();
+	zend_file_handle zfd;
+	zend_stream_init_filename(&zfd, (char *) "/app/html/index.php");
+	zfd.primary_script = 1;
+	//php_execute_script(&zfd);
+
+
+
+	//php_request_shutdown((void *) 0);
+
+	//php_request_shutdown(NULL);
+	//php_handle_aborted_connection();
+
+
+	//SG(request_info).argc=argc-php_optind+1;
+	//SG(request_info).path_translated = translated_path ? translated_path : php_self;
+	//argv[php_optind-1] = php_self;
+	//SG(request_info).argv=argv+php_optind-1;
+
+	//auth = apr_table_get(r->headers_in, "Authorization");
+	//php_handle_auth_data(auth);
+
+	if (php_request_startup()==FAILURE) {
+			printf("Could not startup.\n");
+	}
+	//request_started = 1;
+	//CG(skip_shebang) = 1;
+
+	php_execute_script(&zfd);
+	zend_destroy_file_handle(&zfd);
+	php_request_shutdown((void *) 0);
+
+		printf("after\n");
+	//sapi_send_headers();
+
+	ctx = SG(server_context) = NULL;
+
+	//r->status = SG(sapi_headers).http_response_code;
+	//SG(headers_sent) = 1;
 
 	return OK;
 }

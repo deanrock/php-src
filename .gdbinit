@@ -1,3 +1,5 @@
+set pagination off
+
 define set_ts
 	set $tsrm_ls = $arg0
 end
